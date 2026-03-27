@@ -1,0 +1,14 @@
+[Unit]
+Description=PTS Backend FastAPI Service
+After=network.target
+
+[Service]
+User=odoo
+WorkingDirectory=/opt/pts-backend
+EnvironmentFile=/opt/pts-backend/.env
+ExecStart=/opt/pts-backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

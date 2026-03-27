@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_pts_root" name="PTS Integration" sequence="20"/>
+    <menuitem id="menu_pts_config" name="Backend Settings" parent="menu_pts_root" action="action_pts_backend_config" sequence="10"/>
+    <menuitem id="menu_pts_status" name="Status History" parent="menu_pts_root" action="action_pts_status_snapshot" sequence="20"/>
+</odoo>

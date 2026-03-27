@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pts_backend_config_tree" model="ir.ui.view">
+        <field name="name">pts.backend.config.tree</field>
+        <field name="model">pts.backend.config</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="backend_url"/>
+                <field name="backend_connected"/>
+                <field name="device_connected"/>
+                <field name="last_sync_at"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_pts_backend_config_form" model="ir.ui.view">
+        <field name="name">pts.backend.config.form</field>
+        <field name="model">pts.backend.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_get_token" type="object" string="Get Token" class="btn-primary"/>
+                    <button name="action_sync_status" type="object" string="Sync Status"/>
+                    <button name="action_fetch_fuel_prices" type="object" string="Fetch Fuel Prices"/>
+                    <button name="action_update_fuel_prices" type="object" string="Update Fuel Prices" class="btn-primary"/>
+                    <button name="action_fetch_all_values" type="object" string="Fetch All Values"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active"/>
+                        <field name="backend_url"/>
+                        <field name="username"/>
+                        <field name="password" password="True"/>
+                        <field name="api_key" password="True"/>
+                    </group>
+                    <group string="Fuel Grade Mapping">
+                        <field name="petrol_grade_id"/>
+                        <field name="diesel_grade_id"/>
+                        <field name="lpg_grade_id"/>
+                    </group>
+                    <group string="Fuel Prices">
+                        <field name="petrol_price"/>
+                        <field name="diesel_price"/>
+                        <field name="lpg_price"/>
+                    </group>
+                    <group string="Connection Status">
+                        <field name="backend_connected" readonly="1"/>
+                        <field name="device_connected" readonly="1"/>
+                        <field name="last_sync_at" readonly="1"/>
+                        <field name="last_error" readonly="1"/>
+                    </group>
+                    <group string="All Retrieved Values">
+                        <field name="all_values_json" widget="text" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pts_backend_config" model="ir.actions.act_window">
+        <field name="name">PTS Backend</field>
+        <field name="res_model">pts.backend.config</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

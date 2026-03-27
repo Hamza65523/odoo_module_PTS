@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_pts_status_sync" model="ir.cron">
+        <field name="name">PTS Status Sync</field>
+        <field name="model_id" ref="model_pts_backend_config"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_sync_status()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

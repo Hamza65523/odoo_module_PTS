@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pts_backend_config_user,pts.backend.config user,model_pts_backend_config,base.group_user,1,1,1,1
+access_pts_status_snapshot_user,pts.status.snapshot user,model_pts_status_snapshot,base.group_user,1,0,0,0
