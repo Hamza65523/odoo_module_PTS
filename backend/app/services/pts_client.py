@@ -96,6 +96,7 @@ class PTSClient:
         data: dict[str, Any] | None = None,
         *,
         packets: list[dict[str, Any]] | None = None,
+        validate: bool = True,
     ) -> dict[str, Any]:
         if packets is not None:
             payload: dict[str, Any] = {"Protocol": "jsonPTS", "Packets": packets}
@@ -129,7 +130,8 @@ class PTSClient:
                 raise PTSClientError(f"PTS communication error: {exc}") from exc
 
         body = response.json()
-        self._validate_pts_response(body)
+        if validate:
+            self._validate_pts_response(body)
         return body
 
     # ------------------------------------------------------------------

@@ -49,3 +49,34 @@ class PumpSetPricesRequest(BaseModel):
         ...,
         description="Array of prices for pump nozzles (up to 6), order matches nozzle order",
     )
+
+
+# ---- Generic PTS passthrough ----------------------------------------
+
+class PTSPacket(BaseModel):
+    id: int = Field(default=1, alias="Id", description="Packet id (1-2147483647)")
+    type: str = Field(..., alias="Type", description="jsonPTS request type, e.g. PumpGetStatus")
+    data: dict = Field(default_factory=dict, alias="Data", description="Request-specific data")
+
+    model_config = {"populate_by_name": True}
+
+
+class PTSSendRequest(BaseModel):
+    """Send a single jsonPTS packet."""
+    type: str = Field(..., description="jsonPTS request type, e.g. GetDateTime, PumpSetPrices")
+    data: dict = Field(default_factory=dict, description="Request-specific data payload")
+
+
+class PTSBatchRequest(BaseModel):
+    """Send multiple jsonPTS packets in one request (up to 600 tokens per PTS spec)."""
+    packets: list[PTSPacket] = Field(
+        ...,
+        min_length=1,
+        description="Array of jsonPTS packets to send in a single request",
+    )
+
+
+class PTSResponse(BaseModel):
+    """Raw jsonPTS response with all packets."""
+    protocol: str = "jsonPTS"
+    packets: list[dict] = Field(default_factory=list)
