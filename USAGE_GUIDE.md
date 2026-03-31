@@ -1,11 +1,12 @@
 # PTS + Odoo System Guide
 
 ## Python requirement
-- Required: Python `3.10+`
-- Recommended: Python `3.10.x`
+- **Target / validated:** Python **3.11.9**
+- **Supported line:** Python **3.11.x**
 - Check your version:
   - Windows: `python --version`
   - Linux/macOS: `python3 --version`
+- The repo root includes `.python-version` (`3.11.9`) for pyenv and similar tools.
 
 ## 1) What is implemented
 - Local Python backend (`backend/`) that talks to PTS controller with jsonPTS.

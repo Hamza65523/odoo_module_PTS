@@ -1,3 +1,4 @@
+# PTS backend: Python 3.11.x (project validated on 3.11.9). See repo README.md and .python-version.
 param(
     [string]$ProjectRoot = ".",
     [int]$Port = 8000

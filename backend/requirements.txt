@@ -1,3 +1,4 @@
+# Backend runtime: Python 3.11.x (project validated on 3.11.9 — see repo root README.md and .python-version)
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 sqlalchemy==2.0.36

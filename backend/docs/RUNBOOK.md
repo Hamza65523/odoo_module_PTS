@@ -1,5 +1,8 @@
 # Operations Runbook
 
+## Prerequisites
+- Backend Python **3.11.x**, validated on **3.11.9** (see repository `README.md` and `.python-version`).
+
 ## Service restart
 - `sudo systemctl restart pts-backend`
 - `sudo systemctl status pts-backend`

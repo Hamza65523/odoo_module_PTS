@@ -6,8 +6,9 @@ This workspace contains:
 - `odoo_pts_bridge/`: Odoo 19 module for Odoo.sh to display status and trigger sync.
 
 ## Python version
-- Required: Python `3.10+`
-- Recommended: Python `3.10.x` (validated in this workspace)
+- **Target / validated:** Python **3.11.9** (use this version for the backend in production and local dev).
+- **Supported line:** Python **3.11.x** (other 3.11 patch releases are expected to work).
+- Check: `python --version` or `python3 --version`
 
 ## Backend run
 - Configure `backend/.env` from `backend/.env.example`.

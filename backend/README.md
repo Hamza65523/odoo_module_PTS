@@ -2,6 +2,11 @@
 
 Python FastAPI backend for Odoo 19 integration with a remote PTS controller.
 
+## Python version
+- **Validated:** Python **3.11.9**
+- **Supported:** Python **3.11.x**
+- Create the virtualenv with that interpreter, e.g. `pyenv local 3.11.9` (see repo root `.python-version`) then `python -m venv .venv`.
+
 ## Features
 - JWT-based API authentication
 - API key guard support

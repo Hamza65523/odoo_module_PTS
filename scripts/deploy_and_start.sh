@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# PTS backend: Python 3.11.x (project validated on 3.11.9). See repo README.md and .python-version.
 set -euo pipefail
 
 PROJECT_ROOT="${1:-.}"
