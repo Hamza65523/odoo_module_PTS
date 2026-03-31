@@ -11,7 +11,7 @@ from app.services.pts_client import PTSClient, PTSClientError
 
 
 class StatusService:
-    def __init__(self, db: Session, pts_client: PTSClient):
+    def __init__(self, db: Session, pts_client: PTSClient | None = None):
         self.db = db
         self.pts_client = pts_client
 
@@ -25,6 +25,8 @@ class StatusService:
         return status
 
     async def refresh_device_status(self) -> SystemStatus:
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required for device status refresh")
         status = self._get_or_create_status()
         status.last_backend_check = datetime.now(timezone.utc)
         status.backend_connected = True
@@ -42,18 +44,34 @@ class StatusService:
         self.db.refresh(status)
         return status
 
+    def touch_backend_check(self) -> SystemStatus:
+        """Record that something successfully called the backend API (not PTS)."""
+        status = self._get_or_create_status()
+        status.backend_connected = True
+        status.last_backend_check = datetime.now(timezone.utc)
+        self.db.add(status)
+        self.db.commit()
+        self.db.refresh(status)
+        return status
+
     def current_status(self) -> SystemStatus:
         return self._get_or_create_status()
 
     async def get_pumps(self) -> list[dict[str, Any]]:
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
         result = await self.pts_client.send("PumpGetStatus", {"Pump": 0})
         return result.get("Packets", [])
 
     async def get_probes(self) -> list[dict[str, Any]]:
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
         result = await self.pts_client.send("ProbeGetMeasurements", {"Probe": 1})
         return result.get("Packets", [])
 
     async def get_transactions(self) -> list[dict[str, Any]]:
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         result = await self.pts_client.send(
             "ReportGetPumpTransactions",
@@ -62,6 +80,8 @@ class StatusService:
         return result.get("Packets", [])
 
     async def get_fuel_grades(self) -> list[dict[str, Any]]:
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
         result = await self.pts_client.send("GetFuelGradesConfiguration")
         packets = result.get("Packets", [])
         if not packets:
@@ -70,5 +90,7 @@ class StatusService:
         return data.get("FuelGrades", [])
 
     async def set_fuel_grades_prices(self, prices: list[dict[str, Any]]) -> dict[str, Any]:
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
         payload = {"FuelGradesPrices": prices}
         return await self.pts_client.send("SetFuelGradesPrices", payload)

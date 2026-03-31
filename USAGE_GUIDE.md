@@ -40,10 +40,21 @@ Edit `backend/.env`:
 - `PTS_BASE_URL` (example: `https://<device-ip>/jsonPTS`)
 - `PTS_USERNAME`
 - `PTS_PASSWORD`
+- `PTS_AUTH_MODE` — must match the PTS controller (per documentation: DIP switch 2 **OFF** = **Digest**, **ON** = **Basic**). If this is wrong you will see **HTTP 401** on every call to the device.
 - `PTS_VERIFY_SSL` (`false` when using self-signed cert in test)
 - `API_KEY`
 - `JWT_SECRET_KEY`
-- `CORS_ORIGINS` (your Odoo domain)
+- `CORS_ORIGINS` (comma-separated list of allowed browser origins, or leave empty to allow all `*`)
+
+### Understanding status endpoints
+- `GET /api/v1/status/backend` — only confirms **this FastAPI service** is up. It does **not** call the PTS device. The `message` field is always a short operational note, not a PTS error.
+- `GET /api/v1/status/device` — calls the PTS (`GetDateTime`). If you get **401 Unauthorized** here, fix `PTS_USERNAME`, `PTS_PASSWORD`, and `PTS_AUTH_MODE` in `backend/.env`, then restart the backend.
+
+### Troubleshooting PTS 401 Unauthorized
+1. Confirm URL: `https://<ip>/jsonPTS` (or `http://` if HTTPS is disabled on the controller).
+2. Set `PTS_AUTH_MODE=digest` or `basic` to match DIP switch 2.
+3. Verify username/password in the PTS user configuration.
+4. Restart the backend after changing `.env`.
 
 ## 4) Install Odoo module (Odoo.sh)
 1. Push `odoo_pts_bridge` into custom addons repository.

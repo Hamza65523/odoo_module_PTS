@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -14,12 +16,17 @@ router = APIRouter(prefix="/status", tags=["status"])
 async def backend_status(
     _subject: str = Depends(get_subject_or_api_key), db: Session = Depends(get_db)
 ) -> BackendStatus:
-    service = StatusService(db, PTSClient())
-    current = service.current_status()
+    """Reports only that this FastAPI service is reachable (not PTS connectivity).
+
+    PTS errors from the scheduler or `/status/device` are stored in the DB but must
+    not appear here, or clients confuse \"backend\" with \"device\".
+    """
+    service = StatusService(db, None)
+    service.touch_backend_check()
     return BackendStatus(
-        backend_connected=current.backend_connected,
-        checked_at=current.last_backend_check,
-        message=current.message,
+        backend_connected=True,
+        checked_at=datetime.now(timezone.utc),
+        message="Backend API is running",
     )
 
 

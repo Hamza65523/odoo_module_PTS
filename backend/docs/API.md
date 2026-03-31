@@ -18,8 +18,8 @@ Use header:
 - Optional hardening: `X-API-Key: <api_key>`
 
 ## Status
-- `GET /status/backend`
-- `GET /status/device`
+- `GET /status/backend` — confirms **this API process** is reachable. Does **not** contact the PTS controller. Use this for load balancers or Odoo “backend up” checks.
+- `GET /status/device` — calls PTS (`GetDateTime`). **401** here means wrong `PTS_BASE_URL`, credentials, or `PTS_AUTH_MODE` (Basic vs Digest) in `backend/.env`.
 
 ## Monitoring
 - `GET /pumps`

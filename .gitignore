@@ -11,9 +11,8 @@ __pycache__/
 venv/
 env/
 
-# Environment and secrets
+# Environment and secrets (keep .env.example tracked)
 .env
-*.env
 backend/.env
 
 # Build/artifacts
