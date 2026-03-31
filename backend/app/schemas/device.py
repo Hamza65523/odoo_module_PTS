@@ -36,3 +36,16 @@ class FuelPricesResponse(BaseModel):
 
 class FuelPricesUpdateRequest(BaseModel):
     items: list[FuelGradePrice]
+
+
+class PumpPricesResponse(BaseModel):
+    pump: int
+    prices: list[float]
+    user: str | None = None
+
+
+class PumpSetPricesRequest(BaseModel):
+    prices: list[float] = Field(
+        ...,
+        description="Array of prices for pump nozzles (up to 6), order matches nozzle order",
+    )

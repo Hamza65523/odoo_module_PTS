@@ -9,7 +9,9 @@ from app.schemas.device import (
     FuelPricesResponse,
     FuelPricesUpdateRequest,
     ProbeResponse,
+    PumpPricesResponse,
     PumpResponse,
+    PumpSetPricesRequest,
     TransactionResponse,
 )
 from app.services.command_service import CommandService
@@ -110,5 +112,46 @@ async def update_fuel_prices(
         return CommandResponse(status="ok", action="set_fuel_prices", result=result)
     except PTSClientError as exc:
         raise HTTPException(status_code=400, detail=f"Failed to update prices: {exc}") from exc
+    finally:
+        await client.close()
+
+
+@router.get("/pumps/{pump_id}/prices", response_model=PumpPricesResponse)
+async def get_pump_prices(
+    pump_id: int,
+    _subject: str = Depends(get_subject_or_api_key),
+    db: Session = Depends(get_db),
+) -> PumpPricesResponse:
+    """Get current nozzle prices for a specific pump (PumpGetPrices → PumpPrices)."""
+    client = PTSClient()
+    service = StatusService(db, client)
+    try:
+        data = await service.pump_get_prices(pump_id)
+        return PumpPricesResponse(
+            pump=data.get("Pump", pump_id),
+            prices=data.get("Prices", []),
+            user=data.get("User"),
+        )
+    except PTSClientError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        await client.close()
+
+
+@router.put("/pumps/{pump_id}/prices", response_model=CommandResponse)
+async def set_pump_prices(
+    pump_id: int,
+    req: PumpSetPricesRequest,
+    subject: str = Depends(get_subject_or_api_key),
+    db: Session = Depends(get_db),
+) -> CommandResponse:
+    """Set nozzle prices for a specific pump (PumpSetPrices)."""
+    client = PTSClient()
+    service = StatusService(db, client)
+    try:
+        result = await service.pump_set_prices(pump_id, req.prices)
+        return CommandResponse(status="ok", action="pump_set_prices", result=result)
+    except PTSClientError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     finally:
         await client.close()

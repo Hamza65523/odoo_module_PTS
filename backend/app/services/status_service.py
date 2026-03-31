@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import logging
 from datetime import datetime, timezone
 from typing import Any
 
@@ -8,6 +10,8 @@ from sqlalchemy.orm import Session
 
 from app.db.models import SystemStatus
 from app.services.pts_client import PTSClient, PTSClientError
+
+logger = logging.getLogger(__name__)
 
 
 class StatusService:
@@ -94,3 +98,38 @@ class StatusService:
             raise RuntimeError("PTS client is required")
         payload = {"FuelGradesPrices": prices}
         return await self.pts_client.send("SetFuelGradesPrices", payload)
+
+    # ---- Per-pump prices (PumpGetPrices / PumpSetPrices) ---------------
+
+    async def pump_set_prices(self, pump: int, prices: list[float]) -> dict[str, Any]:
+        """Send PumpSetPrices to set nozzle prices on a specific pump."""
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
+        return await self.pts_client.send(
+            "PumpSetPrices", {"Pump": pump, "Prices": prices}
+        )
+
+    async def pump_get_prices(
+        self, pump: int, *, retries: int = 6, interval: float = 1.0
+    ) -> dict[str, Any]:
+        """Request prices and poll PumpGetStatus until PumpPrices is returned.
+
+        PumpGetPrices is async on the PTS side: it returns OK immediately,
+        then the actual PumpPrices data appears in a subsequent PumpGetStatus
+        response.  We poll up to `retries` times with `interval` seconds between.
+        """
+        if self.pts_client is None:
+            raise RuntimeError("PTS client is required")
+
+        await self.pts_client.send("PumpGetPrices", {"Pump": pump})
+
+        for _ in range(retries):
+            await asyncio.sleep(interval)
+            result = await self.pts_client.send("PumpGetStatus", {"Pump": pump})
+            for pkt in result.get("Packets", []):
+                if pkt.get("Type") == "PumpPrices":
+                    return pkt.get("Data", {})
+
+        raise PTSClientError(
+            f"PumpPrices response not received for pump {pump} after {retries} polls"
+        )
