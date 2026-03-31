@@ -24,6 +24,7 @@ This workspace contains:
 - Add `odoo_pts_bridge` to your custom addons repository.
 - Update apps list and install **PTS Backend Bridge**.
 - Configure backend URL and credentials in **PTS Integration > Backend Settings**.
+- **Odoo.sh:** the backend must be reachable from the cloud (tunnel/VPS); JWT login uses the same **`PTS_USERNAME` / `PTS_PASSWORD`** as in `backend/.env`. See **sections 4–7** in `USAGE_GUIDE.md`.
 
 ## Full guide
 - See `USAGE_GUIDE.md` for complete setup, operation, and testing steps.

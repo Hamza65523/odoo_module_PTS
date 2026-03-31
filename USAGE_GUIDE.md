@@ -57,24 +57,62 @@ Edit `backend/.env`:
 3. Verify username/password in the PTS user configuration.
 4. Restart the backend after changing `.env`.
 
-## 4) Install Odoo module (Odoo.sh)
-1. Push `odoo_pts_bridge` into custom addons repository.
-2. Update Apps List in Odoo.
-3. Install **PTS Backend Bridge**.
-4. Open **PTS Integration > Backend Settings** and create a record:
-   - backend URL
-   - username/password
-   - API key (optional)
-   - grade id mapping for petrol/diesel/LPG
+## 4) How Odoo reaches the backend (important)
 
-## 5) How to use in Odoo
-- **Get Token**: auth against backend.
-- **Sync Status**: updates `backend_connected` and `device_connected`.
-- **Fetch Fuel Prices**: reads prices from backend/PTS into Odoo fields.
-- **Update Fuel Prices**: sends edited petrol/diesel/LPG prices to PTS through backend.
-- **Fetch All Values**: pulls status, fuel prices, pumps, probes, transactions and stores JSON in `all_values_json`.
+Calls from Odoo to the backend are made **from the Odoo server** (Python `requests`), not from your browser.
 
-## 6) API test quick checks
+| Where Odoo runs | What to put in **Backend URL** |
+|-----------------|--------------------------------|
+| **Odoo.sh** (cloud) | A **public URL** that forwards to your laptop, e.g. **ngrok**, **Cloudflare Tunnel**, or a VPS where the backend runs. `http://localhost:8000` will **not** work from Odoo.sh. |
+| **Odoo on the same PC** as the backend | `http://127.0.0.1:8000` |
+| **Odoo in Docker on the same host** | Often `http://host.docker.internal:8000` (Docker Desktop) or the host LAN IP, e.g. `http://192.168.1.10:8000` |
+
+**Expose local backend quickly (example — ngrok):**
+
+1. Start the backend on port 8000.
+2. Run: `ngrok http 8000` (install ngrok from [ngrok.com](https://ngrok.com)).
+3. Copy the HTTPS forwarding URL (e.g. `https://abc123.ngrok-free.app`).
+4. In Odoo **Backend URL**, use that value **with no trailing slash** (e.g. `https://abc123.ngrok-free.app`).
+
+**CORS** in `backend/.env` only affects **browser** calls. Odoo server-side HTTP does not use CORS, so you can leave `CORS_ORIGINS` empty for Odoo-only integration.
+
+## 5) Install Odoo module (Odoo.sh or local)
+
+1. Add the folder `odoo_pts_bridge` to your **custom addons** path (same Git repo Odoo.sh builds from, or your local `addons` path).
+2. **Update Apps List**, remove **Apps** filter, search **PTS Backend Bridge**, **Install**.
+3. Open **PTS Integration → Backend Settings** and create **one** configuration record.
+
+## 6) Backend Settings — exact fields
+
+| Field | What to enter |
+|-------|----------------|
+| **Name** | Any label, e.g. `Production PTS` |
+| **Backend URL** | Public or reachable base URL, e.g. `https://your-tunnel.example` or `http://192.168.1.10:8000` — **no** `/api/v1` suffix |
+| **Username** | Must match **`PTS_USERNAME`** in `backend/.env` (the backend’s `/api/v1/auth/token` checks **these same** credentials — they are not separate “Odoo users”). |
+| **Password** | Must match **`PTS_PASSWORD`** in `backend/.env` |
+| **API key** | Same value as **`API_KEY`** in `backend/.env` (recommended). The module sends `Authorization: Bearer …` and `X-API-Key` when this is filled; either auth mode is accepted by the backend. |
+| **Petrol / Diesel / LPG grade ID** | Defaults `1`, `2`, `3` — adjust if your PTS uses different `FuelGradeId` values (see PTS or `GetFuelGradesConfiguration`). |
+
+After saving, use the form buttons in this order for a first test:
+
+1. **Get Token** — should succeed without error (if this fails, URL, username, password, or network path is wrong).
+2. **Sync Status** — should set **Backend connected** / **Device connected** if the backend can reach the PTS.
+3. **Fetch Fuel Prices** — fills **Petrol / Diesel / LPG** price fields from `GET /api/v1/fuel-prices`.
+4. **Fetch All Values** — fills **All Retrieved Values** with a large JSON snapshot.
+
+**JWT expiry:** The token expires after `JWT_EXPIRE_MINUTES` (default 60) in `.env`. If API calls start failing with 401, click **Get Token** again.
+
+## 7) How to use in Odoo (buttons)
+
+- **Get Token** — obtain JWT from `POST /api/v1/auth/token`.
+- **Sync Status** — `GET` status/backend and status/device; updates flags and appends **Status History**.
+- **Fetch Fuel Prices** — reads prices into Odoo fields.
+- **Update Fuel Prices** — `PUT` edited prices to the backend (global fuel-grade prices).
+- **Fetch All Values** — status, fuel prices, pumps, probes, transactions → `all_values_json`.
+
+Scheduled job **PTS Status Sync** (cron) runs **Sync Status** every minute for active configs; it uses the stored token — refresh the token periodically or increase `JWT_EXPIRE_MINUTES` if cron keeps failing after an hour.
+
+## 8) API test quick checks (curl / browser)
 1. `GET /health`
 2. `POST /api/v1/auth/token`
 3. `GET /api/v1/status/backend`
@@ -84,7 +122,7 @@ Edit `backend/.env`:
 
 See details in `backend/docs/API.md`.
 
-## 7) Why only some PDF APIs were implemented first
+## 9) Why only some PDF APIs were implemented first
 The PDF contains a very large protocol surface. The first delivery intentionally implemented a production-safe MVP:
 - core connectivity and status
 - selected operations
@@ -92,7 +130,7 @@ The PDF contains a very large protocol surface. The first delivery intentionally
 
 This reduces risk and allows validation with your real remote device before enabling many control/reporting endpoints. The architecture is already modular, so additional PDF endpoints can now be added incrementally.
 
-## 8) Recommended test flow with your real device
+## 10) Recommended test flow with your real device
 1. Verify backend `GET /health`.
 2. Verify `GET /api/v1/status/device` becomes connected.
 3. Fetch fuel prices in Odoo.

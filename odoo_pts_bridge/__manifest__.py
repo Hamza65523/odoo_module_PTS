@@ -3,6 +3,7 @@
     "version": "19.0.1.0.0",
     "summary": "Integrate Odoo with local PTS backend",
     "depends": ["base", "mail"],
+    "external_dependencies": {"python": ["requests"]},
     "data": [
         "security/ir.model.access.csv",
         "data/ir_cron_data.xml",
