@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.db.models import CommandAudit
 from app.services.pts_client import PTSClient, PTSClientError
 
-ALLOWED_ACTIONS = {
+ACTION_ALIASES = {
     "pump_stop": "PumpStop",
     "pump_emergency_stop": "PumpEmergencyStop",
     "pump_authorize": "PumpAuthorize",
@@ -19,10 +19,8 @@ class CommandService:
         self.pts_client = pts_client
 
     async def execute(self, action: str, payload: dict, requested_by: str) -> dict:
-        if action not in ALLOWED_ACTIONS:
-            raise ValueError(f"Unsupported action: {action}")
+        command_name = ACTION_ALIASES.get(action, action)
 
-        command_name = ALLOWED_ACTIONS[action]
         audit = CommandAudit(
             command_name=command_name,
             requested_by=requested_by,
