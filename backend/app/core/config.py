@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     encryption_key: str = ""
 
-    pts_base_url: str = "https://127.0.0.1/jsonPTS"
+    pts_base_url: str = "https://c33d-2a02-ce0-1802-cedd-4cd4-20be-e317-ec4e.ngrok-free.app/jsonPTS"
     pts_username: str = "admin"
     pts_password: str = "admin"
     pts_auth_mode: str = "basic"
